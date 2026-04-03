@@ -1,0 +1,29 @@
+# Test Samples for DocuAI-Extractor
+
+To test the system, please provide the following files in the `test_samples/` directory:
+
+## PDF Samples (5)
+1. **invoice.pdf**: A sample invoice with currency symbols and itemized tables.
+2. **resume.pdf**: A standard professional resume for entity extraction (PERSON, ORG).
+3. **report.pdf**: A long text document to test BART summarization.
+4. **contract.pdf**: A legal document for entity and sentiment analysis.
+5. **scanned_document.pdf**: A scanned image-based PDF for OCR testing.
+
+## DOCX Samples (5)
+1. **agreement.docx**: A sample business agreement.
+2. **letter.docx**: A formal letter for entity and sentiment.
+3. **proposal.docx**: A project proposal for summarization.
+4. **meeting_minutes.docx**: A document with dates and participants.
+5. **receipt.docx**: A document with prices and amounts.
+
+## Image Samples (5)
+1. **receipt.jpg**: A scanned receipt for OCR and money extraction.
+2. **screenshot.png**: A screenshot of a text document.
+3. **handwriting.jpg**: A clear handwritten note for OCR testing.
+4. **id_card.png**: A sample ID card for entity extraction (PERSON).
+5. **business_card.jpg**: A business card for ORG and contact info.
+
+### Testing Instructions:
+- Run the backend and frontend.
+- Drag and drop these files into the upload zone.
+- Verify the results in the dashboard.
