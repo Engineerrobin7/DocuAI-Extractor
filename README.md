@@ -71,9 +71,14 @@ Our data extraction strategy follows a robust multi-stage pipeline:
 ## API Documentation
 The API is self-documented with Swagger. Visit `http://localhost:8000/docs` when the backend is running.
 
-- **POST /process**: Upload a file for analysis.
-  - Request: `multipart/form-data` with `file` field.
-  - Response: JSON with `summary`, `entities`, `money`, and `sentiment`.
+- **GET /**: Health check endpoint.
+- **POST /api/document-analyze**: Analyze a document (base64 payload).
+  - Request body: JSON with `fileName`, `fileType`, `fileBase64`.
+  - Headers: `X-API-Key: <api-key>`
+  - Response: JSON with `status`, `fileName`, `summary`, `entities`, `sentiment`.
+
+### GUI Endpoint Tester (GUVI compliance)
+In the frontend app, you can now enter any deployed endpoint URL and API key in the top tester pane, then click **Test Endpoint**. It sends a sample payload (text) to verify authentication, payload handling, and response format.
 
 ## Screenshots
 (Add screenshots of the dashboard and upload zone here)

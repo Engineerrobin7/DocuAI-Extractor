@@ -20,6 +20,11 @@ function App() {
   const [results, setResults] = useState(null);
   const [error, setError] = useState(null);
 
+  const [endpointURL, setEndpointURL] = useState(`${API_URL}/api/document-analyze`);
+  const [apiKey, setApiKey] = useState(import.meta.env.VITE_API_KEY || 'GUVI-AI-2026');
+  const [testResult, setTestResult] = useState(null);
+  const [testerLoading, setTesterLoading] = useState(false);
+
   const onFileChange = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
@@ -50,20 +55,53 @@ function App() {
         };
 
         try {
-          const response = await axios.post(`${API_URL}/api/document-analyze`, payload, {
+          const targetUrl = endpointURL?.trim() || `${API_URL}/api/document-analyze`;
+          const response = await axios.post(targetUrl, payload, {
             headers: {
               'Content-Type': 'application/json',
-              'X-API-Key': import.meta.env.VITE_API_KEY || 'GUVI-AI-2026'
+              'X-API-Key': apiKey || 'GUVI-AI-2026'
             },
           });
           setResults(response.data);
+          setError(null);
         } catch (err) {
           console.error('Upload error:', err);
-          setError(err.response?.data?.detail || 'An error occurred while processing the document.');
+          setError(err.response?.data?.detail || err.message || 'An error occurred while processing the document.');
         } finally {
           setLoading(false);
         }
       };
+
+  const handleTestEndpoint = async () => {
+    setTesterLoading(true);
+    setTestResult(null);
+    setError(null);
+
+    try {
+      const sampleText = 'GUVI hackathon endpoint test sample: Company ABC, John Doe, $999, 2026-05-10.';
+      const payload = {
+        fileName: 'test.txt',
+        fileType: 'txt',
+        fileBase64: btoa(sampleText)
+      };
+
+      const targetUrl = endpointURL?.trim() || `${API_URL}/api/document-analyze`;
+      const response = await axios.post(targetUrl, payload, {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': apiKey || 'GUVI-AI-2026'
+        }
+      });
+
+      setTestResult({ status: response.status, data: response.data });
+      setResults(response.data);
+    } catch (err) {
+      console.error('Tester error:', err);
+      setError(err.response?.data?.detail || err.message || 'Failed to test target endpoint.');
+    } finally {
+      setTesterLoading(false);
+    }
+  };
 
       reader.onerror = (error) => {
         console.error('Error reading file:', error);
@@ -121,6 +159,58 @@ function App() {
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-12">
+        {/* Endpoint Tester */}
+        <section className="mb-8">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700">
+            <h2 className="text-2xl font-semibold mb-3">API Endpoint Tester</h2>
+            <p className="text-gray-600 dark:text-gray-300 mb-4">Enter your deployed API endpoint and API key, then click Test Endpoint. This mirrors GUVI validation behavior.</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+              <input
+                type="text"
+                value={endpointURL}
+                onChange={(e) => setEndpointURL(e.target.value)}
+                placeholder="https://your-domain.com/api/document-analyze"
+                className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+              />
+              <input
+                type="text"
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+                placeholder="API Key"
+                className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={handleTestEndpoint}
+                disabled={testerLoading}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {testerLoading ? 'Testing...' : 'Test Endpoint'}
+              </button>
+              <button
+                onClick={() => {
+                  setEndpointURL(`${API_URL}/api/document-analyze`);
+                  setApiKey(import.meta.env.VITE_API_KEY || 'GUVI-AI-2026');
+                  setTestResult(null);
+                  setError(null);
+                }}
+                className="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 px-5 py-2 rounded-lg font-bold transition-all"
+              >
+                Reset
+              </button>
+            </div>
+
+            {testResult && (
+              <div className="mt-4 p-3 rounded-lg border border-green-300 bg-green-50 dark:bg-green-900/30 dark:border-green-700">
+                <span className="font-semibold">Last test status:</span> {testResult.status}
+              </div>
+            )}
+            {error && <p className="text-red-500 mt-3">{error}</p>}
+          </div>
+        </section>
+
         {/* Upload Section */}
         <section className="mb-12">
           <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl border-2 border-dashed border-gray-300 dark:border-gray-700 flex flex-col items-center justify-center">
