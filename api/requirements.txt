@@ -1,0 +1,12 @@
+fastapi
+pytesseract
+pdf2image
+pymupdf
+python-docx
+pillow
+spacy
+transformers
+torch
+accelerate
+sentencepiece
+sacremoses

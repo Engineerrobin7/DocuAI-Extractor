@@ -20,7 +20,7 @@ function App() {
   const [results, setResults] = useState(null);
   const [error, setError] = useState(null);
 
-  const [endpointURL, setEndpointURL] = useState(`${API_URL}/api/document-analyze`);
+  const [endpointURL, setEndpointURL] = useState(API_URL);
   const [apiKey, setApiKey] = useState(import.meta.env.VITE_API_KEY || 'GUVI-AI-2026');
   const [testResult, setTestResult] = useState(null);
   const [testerLoading, setTesterLoading] = useState(false);
@@ -39,38 +39,45 @@ function App() {
     setError(null);
     setResults(null);
 
-    try {
-      // Convert file to Base64 to match new API spec
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      
-      reader.onload = async () => {
+    const targetUrl = endpointURL?.trim() || API_URL;
+    const reader = new FileReader();
+
+    reader.onload = async () => {
+      try {
         const base64String = reader.result.split(',')[1];
         const fileType = file.name.split('.').pop().toLowerCase();
-        
+
         const payload = {
           fileName: file.name,
           fileType: fileType,
           fileBase64: base64String
         };
 
-        try {
-          const targetUrl = endpointURL?.trim() || `${API_URL}/api/document-analyze`;
-          const response = await axios.post(targetUrl, payload, {
-            headers: {
-              'Content-Type': 'application/json',
-              'X-API-Key': apiKey || 'GUVI-AI-2026'
-            },
-          });
-          setResults(response.data);
-          setError(null);
-        } catch (err) {
-          console.error('Upload error:', err);
-          setError(err.response?.data?.detail || err.message || 'An error occurred while processing the document.');
-        } finally {
-          setLoading(false);
-        }
-      };
+        const response = await axios.post(targetUrl, payload, {
+          headers: {
+            'Content-Type': 'application/json',
+            'X-API-Key': apiKey || 'GUVI-AI-2026'
+          },
+        });
+
+        setResults(response.data);
+        setError(null);
+      } catch (err) {
+        console.error('Upload error:', err);
+        setError(err.response?.data?.detail || err.message || 'An error occurred while processing the document.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    reader.onerror = (error) => {
+      console.error('Error reading file:', error);
+      setError('Error reading file for upload');
+      setLoading(false);
+    };
+
+    reader.readAsDataURL(file);
+  };
 
   const handleTestEndpoint = async () => {
     setTesterLoading(true);
@@ -85,7 +92,7 @@ function App() {
         fileBase64: btoa(sampleText)
       };
 
-      const targetUrl = endpointURL?.trim() || `${API_URL}/api/document-analyze`;
+      const targetUrl = endpointURL?.trim() || API_URL;
       const response = await axios.post(targetUrl, payload, {
         headers: {
           'Content-Type': 'application/json',
@@ -100,19 +107,6 @@ function App() {
       setError(err.response?.data?.detail || err.message || 'Failed to test target endpoint.');
     } finally {
       setTesterLoading(false);
-    }
-  };
-
-      reader.onerror = (error) => {
-        console.error('Error reading file:', error);
-        setError('Error reading file for upload');
-        setLoading(false);
-      };
-
-    } catch (err) {
-      console.error('Processing error:', err);
-      setError('An error occurred during file processing');
-      setLoading(false);
     }
   };
 
@@ -191,7 +185,7 @@ function App() {
               </button>
               <button
                 onClick={() => {
-                  setEndpointURL(`${API_URL}/api/document-analyze`);
+                  setEndpointURL(API_URL);
                   setApiKey(import.meta.env.VITE_API_KEY || 'GUVI-AI-2026');
                   setTestResult(null);
                   setError(null);
